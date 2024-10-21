@@ -8,11 +8,17 @@ Develop a Community Safety Alert System that allows residents to report emergenc
 
 Components Used:
 •	Buzzer: To signal an alert.
+
 •	Button: For residents to report an emergency.
+
 •	LED: To visually indicate the status of the system (e.g., green for normal, red for alert).
+
 •	Rotary Angle Sensor: To adjust the volume of alerts.
+
 •	Potentiometer: To control the sensitivity of the emergency report button (e.g., preventing false alarms).
+
 •	Screen: To display messages, alerts, and instructions.
+
 
 Problem Overview
 
