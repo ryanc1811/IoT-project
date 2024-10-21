@@ -1,8 +1,11 @@
 Project Idea: Community Safety Alert System
+
 Problem:
 In many communities, residents often feel unsafe or are unaware of local emergencies (like natural disasters or security threats). Quick communication can be vital in such situations.
+
 Solution:
 Develop a Community Safety Alert System that allows residents to report emergencies or safety issues and receive alerts.
+
 Components Used:
 •	Buzzer: To signal an alert.
 •	Button: For residents to report an emergency.
@@ -10,6 +13,7 @@ Components Used:
 •	Rotary Angle Sensor: To adjust the volume of alerts.
 •	Potentiometer: To control the sensitivity of the emergency report button (e.g., preventing false alarms).
 •	Screen: To display messages, alerts, and instructions.
+
 How It Works:
 1.	Emergency Reporting:
 o	Residents can press the button to report an emergency (like a fire, suspicious activity, etc.).
