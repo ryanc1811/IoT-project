@@ -1,0 +1,57 @@
+#define button 6  // Button connected to D6
+#define LED 8     // LED connected to D8
+#define buzzer 3  // Buzzer connected to D3
+
+int button_state = 0;        
+int last_button_state = 0;   
+bool led_on = false;         
+bool buzzer_on = false;      
+
+void setup() {
+  
+
+  pinMode(button, INPUT);
+
+
+  pinMode(LED, OUTPUT);
+  pinMode(buzzer, OUTPUT);
+
+
+  digitalWrite(LED, LOW);
+  digitalWrite(buzzer, LOW);
+}
+
+void loop() {
+
+  button_state = digitalRead(button);
+
+  if (button_state == HIGH && last_button_state == LOW) {
+ 
+    led_on = !led_on;      
+    buzzer_on = !buzzer_on; 
+
+   
+    if (led_on) {
+      digitalWrite(LED, HIGH); 
+      Serial.println("LED ON");
+    } else {
+      digitalWrite(LED, LOW);   
+      Serial.println("LED OFF");
+    }
+
+  
+    if (buzzer_on) {
+      digitalWrite(buzzer, HIGH);  
+      Serial.println("Buzzer ON");
+    } else {
+      digitalWrite(buzzer, LOW);   
+      Serial.println("Buzzer OFF");
+    }
+  }
+
+
+  last_button_state = button_state;
+
+  delay(50);
+}
+
