@@ -1,0 +1,75 @@
+#include <Wire.h>
+#include <Process.h>  // To run commands via the Yun's Linux environment
+
+// Wi-Fi settings
+char ssid[] = "27 Greenfort";  // your WiFi SSID
+char pass[] = "27ryanalexrobyn";  // your WiFi password
+
+// Pin assignment for the button
+#define BUTTON_PIN 7  // Button connected to pin 7
+
+// PushingBox DeviceID
+const char* pushingBoxDeviceID = "v0200C76CEAC801B";  // Your PushingBox Device ID
+
+// Variables for button state
+bool lastButtonState = LOW;  // Previous state of the button
+bool currentButtonState = LOW;  // Current state of the button
+unsigned long lastDebounceTime = 0;  // Last time button was pressed
+unsigned long debounceDelay = 200;  // Debounce delay (in ms)
+
+void setup() {
+  // Start serial monitor for debugging
+  Serial.begin(9600);
+
+  // Initialize Wi-Fi and PushingBox (Assume Wi-Fi setup is done via Yun bridge)
+  Bridge.begin();
+  Serial.println("Bridge initialized.");
+
+  // Set the button pin as input
+  pinMode(BUTTON_PIN, INPUT);
+}
+
+void loop() {
+  // Read the state of the button
+  int reading = digitalRead(BUTTON_PIN);
+
+  // Check if the button state has changed
+  if (reading != lastButtonState) {
+    lastDebounceTime = millis();  // Reset debounce timer
+  }
+
+  // If the button state has changed and enough time has passed (debounce)
+  if ((millis() - lastDebounceTime) > debounceDelay) {
+    // If the button state has changed to HIGH, trigger the email
+    if (reading == HIGH && lastButtonState == LOW) {
+      sendEmailNotification();
+    }
+  }
+
+  // Save the current button state for the next loop
+  lastButtonState = reading;
+}
+
+void sendEmailNotification() {
+  // Create a process to send the HTTP request
+  Process p;
+
+  // Construct the PushingBox API URL
+  String url = "http://api.pushingbox.com/pushingbox?devid=" + String(pushingBoxDeviceID);
+
+  // Start the process for the HTTP GET request
+  p.begin("curl");
+  p.addParameter(url);  // Add the URL parameter to the command
+  p.run();  // Run the command (this sends the request)
+
+  // Check the output of the command
+  String response = p.readString();
+  
+  // Debugging: Print the response
+  if (response.indexOf("Success") != -1) {
+    Serial.println("Email sent successfully");
+  } else {
+    Serial.print("Error sending email: ");
+    Serial.println(response);
+  }
+}
