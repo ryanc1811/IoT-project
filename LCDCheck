@@ -1,14 +1,14 @@
-#include <LiquidCrystal.h>  
-
-LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
+#include <Wire.h>
+#include <rgb_lcd.h>  
+rgb_lcd lcd; 
 
 void setup() {
- 
-  lcd.begin(16, 2);
+  lcd.begin(16, 2);  
   
-  
-  lcd.setCursor(0, 0);    // Set cursor to first row, first column
-  lcd.print("MISSILE INBOUND"); // Print message
+  // Set RGB backlight color (values range from 0 to 255)
+  lcd.setRGB(255, 0, 0); 
+  lcd.setCursor(0, 0); 
+  lcd.print("MISSILE INBOUND");  
 }
 
 void loop() {
