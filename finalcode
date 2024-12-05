@@ -22,6 +22,12 @@ String pushingboxURL = "http://api.pushingbox.com/pushingbox";
 String emailDeviceID = "v0200C76CEAC801B";  // Device ID for emails
 String sheetDeviceID = "v3A3A048C2D3951C";  // Device ID for spreadsheet
 
+// Timing for flashing
+unsigned long lastFlashTime = 0;
+unsigned long flashInterval = 500; // Flash interval (500ms)
+unsigned long lastBuzzerTime = 0;
+unsigned long buzzerInterval = 1000; // Buzzer interval (1 second)
+
 void setup() {
   lcd.begin(16, 2);
   lcd.setRGB(255, 0, 0);  // Red backlight initially
@@ -89,6 +95,25 @@ void loop() {
   }
 
   lastButton = reading; // Update the button state
+
+  // Flashing behavior when alert is active
+  if (isAlertActive) {
+    unsigned long currentMillis = millis();
+
+    // Flash the LED every 500ms
+    if (currentMillis - lastFlashTime >= flashInterval) {
+      lastFlashTime = currentMillis;
+      int ledState = digitalRead(ledPin);
+      digitalWrite(ledPin, ledState == HIGH ? LOW : HIGH);  // Toggle LED
+    }
+
+    // Make the buzzer beep every 1 second
+    if (currentMillis - lastBuzzerTime >= buzzerInterval) {
+      lastBuzzerTime = currentMillis;
+      int buzzerState = digitalRead(buzzerPin);
+      digitalWrite(buzzerPin, buzzerState == HIGH ? LOW : HIGH);  // Toggle Buzzer
+    }
+  }
 }
 
 // Function to send the PushingBox HTTP request
