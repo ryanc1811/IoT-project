@@ -1,0 +1,110 @@
+#include <Wire.h>
+#include <rgb_lcd.h>
+#include <Bridge.h>
+#include <Process.h>
+
+rgb_lcd lcd;
+
+const int buttonPin = 7;  // Pin for the button
+const int buzzerPin = 8;  // Pin for the buzzer
+const int ledPin = 5;     // Pin for the LED
+
+bool isAlertActive = true; // Start with the alert active
+bool buttonState = true;   // Start with button On
+bool alertState = true;    // Start with alert High
+bool lastButton = HIGH;    // Last button state
+bool debounce = false;
+unsigned long debounceTime = 50; // Debounce time in ms
+unsigned long lastDebounceTime = 0;
+
+// PushingBox API URL and Device IDs
+String pushingboxURL = "http://api.pushingbox.com/pushingbox";
+String emailDeviceID = "v0200C76CEAC801B";  // Device ID for emails
+String sheetDeviceID = "v3A3A048C2D3951C";  // Device ID for spreadsheet
+
+void setup() {
+  lcd.begin(16, 2);
+  lcd.setRGB(255, 0, 0);  // Red backlight initially
+  lcd.setCursor(0, 0);
+  lcd.print("WARNING!!");
+
+  Serial.begin(9600);
+  Bridge.begin();
+
+  pinMode(buttonPin, INPUT_PULLUP);  // Button with pull-up resistor
+  pinMode(buzzerPin, OUTPUT);
+  pinMode(ledPin, OUTPUT);
+
+  digitalWrite(buzzerPin, HIGH); // Turn on buzzer
+  digitalWrite(ledPin, HIGH);   // Turn on LED
+
+  delay(5000);
+
+  Serial.println("Setup complete.");
+}
+
+void loop() {
+  bool reading = digitalRead(buttonPin);
+
+  // Debounce logic
+  if (reading != lastButton) {
+    lastDebounceTime = millis();
+    debounce = true;
+  }
+
+  if (debounce && (millis() - lastDebounceTime) > debounceTime) {
+    if (reading == LOW) { // Button pressed
+      buttonState = !buttonState; // Toggle ButtonState
+      alertState = !alertState;   // Toggle AlertState
+      isAlertActive = !isAlertActive; // Toggle alert system state
+
+      // Send requests based on state
+      if (isAlertActive) {
+        sendToPushingBox(pushingboxURL + "?devid=" + emailDeviceID);  // Send email alert
+      }
+
+      // Always update the spreadsheet
+      String sheetURL = pushingboxURL + "?devid=" + sheetDeviceID +
+                        "&ButtonState=" + (buttonState ? "On" : "Off") +
+                        "&AlertState=" + (alertState ? "High" : "Low");
+      sendToPushingBox(sheetURL);
+
+      // Control the alert system
+      if (isAlertActive) {
+        lcd.setRGB(255, 0, 0);  // Red backlight
+        lcd.setCursor(0, 0);
+        lcd.print("WARNING!!");
+        digitalWrite(buzzerPin, HIGH); // Turn on buzzer
+        digitalWrite(ledPin, HIGH);   // Turn on LED
+      } else {
+        lcd.setRGB(0, 0, 0);  // Turn off backlight
+        lcd.clear();          // Clear the LCD display
+        digitalWrite(buzzerPin, LOW); // Turn off buzzer
+        digitalWrite(ledPin, LOW);   // Turn off LED
+      }
+
+      delay(2000);  // Debounce delay to avoid multiple triggers
+    }
+    debounce = false;
+  }
+
+  lastButton = reading; // Update the button state
+}
+
+// Function to send the PushingBox HTTP request
+void sendToPushingBox(String url) {
+  Serial.println("Sending request to PushingBox...");
+
+  Process p;
+  p.begin("curl");
+  p.addParameter(url);
+  p.run();  // Run the command
+
+  while (p.available()) {
+    char c = p.read();
+    Serial.print(c);
+  }
+  Serial.println();
+
+  Serial.println("PushingBox request sent!");
+}
