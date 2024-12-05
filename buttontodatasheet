@@ -1,0 +1,69 @@
+#include <Bridge.h>
+#include <Process.h>
+
+// Define the button pin
+const int buttonPin = 7; // Adjust to your hardware setup
+bool buttonState = false; // Tracks whether button is On or Off
+bool alertState = false; // Tracks whether alert is High or Low
+bool lastButton = HIGH; // Last button state
+bool debounce = false;
+unsigned long debounceTime = 50; // Debounce time in ms
+unsigned long lastDebounceTime = 0;
+
+// PushingBox settings
+String deviceID = "v3A3A048C2D3951C"; // Replace with your PushingBox Device ID
+String pushingBoxURL = "http://api.pushingbox.com/pushingbox";
+
+void setup() {
+  pinMode(buttonPin, INPUT_PULLUP); // Button pin with pull-up resistor
+  Bridge.begin();                  // Initialize the Bridge
+  Serial.begin(9600);              // Serial for debugging
+  while (!Serial);                 // Wait for Serial Monitor
+  Serial.println("Setup complete.");
+}
+
+void loop() {
+  // Read the button state
+  bool reading = digitalRead(buttonPin);
+
+  // Debounce logic
+  if (reading != lastButton) {
+    lastDebounceTime = millis();
+    debounce = true;
+  }
+
+  if (debounce && (millis() - lastDebounceTime) > debounceTime) {
+    if (reading == LOW) { // Button pressed
+      buttonState = !buttonState; // Toggle ButtonState
+      alertState = !alertState;   // Toggle AlertState
+
+      // Create URL with updated states
+      String url = pushingBoxURL + "?devid=" + deviceID +
+                   "&ButtonState=" + (buttonState ? "On" : "Off") +
+                   "&AlertState=" + (alertState ? "High" : "Low");
+      
+      Serial.println("Sending to PushingBox:");
+      Serial.println(url);
+
+      // Send the data
+      sendToPushingBox(url);
+    }
+    debounce = false;
+  }
+
+  lastButton = reading;
+}
+
+void sendToPushingBox(String url) {
+  Process p;
+  p.begin("curl"); // Use curl to send HTTP request
+  p.addParameter(url);
+  p.run();
+
+  // Debugging response
+  while (p.available()) {
+    char c = p.read();
+    Serial.print(c);
+  }
+  Serial.println();
+}
