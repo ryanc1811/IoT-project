@@ -1,0 +1,22 @@
+#define BLYNK_PRINT Serial
+#include <WiFi.h>
+#include <BlynkSimpleEsp32.h>
+
+char auth[] = "YourAuthToken";
+char ssid[] = "YourWiFiSSID";
+char pass[] = "YourWiFiPassword";
+
+const int missilePin = 7;
+
+void setup() {
+  pinMode(missilePin, INPUT);
+  Serial.begin(9600);
+  Blynk.begin(auth, ssid, pass);
+}
+
+void loop() {
+  if (digitalRead(missilePin) == HIGH) {
+    Blynk.notify("Missile inbound");
+  }
+  Blynk.run();
+}
