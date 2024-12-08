@@ -5,44 +5,44 @@
 
 rgb_lcd lcd;
 
-const int buttonPin = 7;  // Pin for the button
-const int buzzerPin = 8;  // Pin for the buzzer
-const int ledPin = 5;     // Pin for the LED
+const int buttonPin = 7; 
+const int buzzerPin = 8;  
+const int ledPin = 5;     
 
-bool isAlertActive = true; // Start with the alert active
-bool buttonState = true;   // Start with button On
-bool alertState = true;    // Start with alert High
-bool lastButton = HIGH;    // Last button state
+bool isAlertActive = true; 
+bool buttonState = true;  
+bool alertState = true;   
+bool lastButton = HIGH;   
 bool debounce = false;
-unsigned long debounceTime = 50; // Debounce time in ms
+unsigned long debounceTime = 50; 
 unsigned long lastDebounceTime = 0;
 
-// PushingBox API URL and Device IDs
-String pushingboxURL = "http://api.pushingbox.com/pushingbox";
-String emailDeviceID = "v0200C76CEAC801B";  // Device ID for emails
-String sheetDeviceID = "v3A3A048C2D3951C";  // Device ID for spreadsheet
 
-// Timing for flashing
+String pushingboxURL = "http://api.pushingbox.com/pushingbox";
+String emailDeviceID = "v0200C76CEAC801B";  
+String sheetDeviceID = "v3A3A048C2D3951C";  
+
+
 unsigned long lastFlashTime = 0;
-unsigned long flashInterval = 500; // Flash interval (500ms)
+unsigned long flashInterval = 500; 
 unsigned long lastBuzzerTime = 0;
-unsigned long buzzerInterval = 1000; // Buzzer interval (1 second)
+unsigned long buzzerInterval = 1000; 
 
 void setup() {
   lcd.begin(16, 2);
-  lcd.setRGB(255, 0, 0);  // Red backlight initially
+  lcd.setRGB(255, 0, 0);  
   lcd.setCursor(0, 0);
   lcd.print("WARNING!!");
 
   Serial.begin(9600);
   Bridge.begin();
 
-  pinMode(buttonPin, INPUT_PULLUP);  // Button with pull-up resistor
+  pinMode(buttonPin, INPUT_PULLUP);  
   pinMode(buzzerPin, OUTPUT);
   pinMode(ledPin, OUTPUT);
 
-  digitalWrite(buzzerPin, HIGH); // Turn on buzzer
-  digitalWrite(ledPin, HIGH);   // Turn on LED
+  digitalWrite(buzzerPin, HIGH); 
+  digitalWrite(ledPin, HIGH);   
 
   delay(5000);
 
@@ -52,78 +52,75 @@ void setup() {
 void loop() {
   bool reading = digitalRead(buttonPin);
 
-  // Debounce logic
+ 
   if (reading != lastButton) {
     lastDebounceTime = millis();
     debounce = true;
   }
 
   if (debounce && (millis() - lastDebounceTime) > debounceTime) {
-    if (reading == LOW) { // Button pressed
-      buttonState = !buttonState; // Toggle ButtonState
-      alertState = !alertState;   // Toggle AlertState
-      isAlertActive = !isAlertActive; // Toggle alert system state
+    if (reading == LOW) { 
+      buttonState = !buttonState; 
+      alertState = !alertState;   
+      isAlertActive = !isAlertActive; 
 
-      // Send requests based on state
+     
       if (isAlertActive) {
-        sendToPushingBox(pushingboxURL + "?devid=" + emailDeviceID);  // Send email alert
+        sendToPushingBox(pushingboxURL + "?devid=" + emailDeviceID);  
       }
 
-      // Always update the spreadsheet
       String sheetURL = pushingboxURL + "?devid=" + sheetDeviceID +
                         "&ButtonState=" + (buttonState ? "On" : "Off") +
                         "&AlertState=" + (alertState ? "High" : "Low");
       sendToPushingBox(sheetURL);
 
-      // Control the alert system
+    
       if (isAlertActive) {
-        lcd.setRGB(255, 0, 0);  // Red backlight
+        lcd.setRGB(255, 0, 0); 
         lcd.setCursor(0, 0);
         lcd.print("WARNING!!");
-        digitalWrite(buzzerPin, HIGH); // Turn on buzzer
-        digitalWrite(ledPin, HIGH);   // Turn on LED
+        digitalWrite(buzzerPin, HIGH); 
+        digitalWrite(ledPin, HIGH);   
       } else {
-        lcd.setRGB(0, 0, 0);  // Turn off backlight
-        lcd.clear();          // Clear the LCD display
-        digitalWrite(buzzerPin, LOW); // Turn off buzzer
-        digitalWrite(ledPin, LOW);   // Turn off LED
+        lcd.setRGB(0, 0, 0);  
+        lcd.clear();          
+        digitalWrite(buzzerPin, LOW); 
+        digitalWrite(ledPin, LOW);   
       }
 
-      delay(2000);  // Debounce delay to avoid multiple triggers
+      delay(2000);  
     }
     debounce = false;
   }
 
-  lastButton = reading; // Update the button state
+  lastButton = reading; 
 
-  // Flashing behavior when alert is active
   if (isAlertActive) {
     unsigned long currentMillis = millis();
 
-    // Flash the LED every 500ms
+    
     if (currentMillis - lastFlashTime >= flashInterval) {
       lastFlashTime = currentMillis;
       int ledState = digitalRead(ledPin);
-      digitalWrite(ledPin, ledState == HIGH ? LOW : HIGH);  // Toggle LED
+      digitalWrite(ledPin, ledState == HIGH ? LOW : HIGH);  
     }
 
-    // Make the buzzer beep every 1 second
     if (currentMillis - lastBuzzerTime >= buzzerInterval) {
       lastBuzzerTime = currentMillis;
       int buzzerState = digitalRead(buzzerPin);
-      digitalWrite(buzzerPin, buzzerState == HIGH ? LOW : HIGH);  // Toggle Buzzer
+      digitalWrite(buzzerPin, buzzerState == HIGH ? LOW : HIGH); 
     }
   }
 }
 
-// Function to send the PushingBox HTTP request
+
 void sendToPushingBox(String url) {
   Serial.println("Sending request to PushingBox...");
 
   Process p;
   p.begin("curl");
   p.addParameter(url);
-  p.run();  // Run the command
+  p.run();  
 
   while (p.available()) {
     char c = p.read();
