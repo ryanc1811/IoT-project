@@ -1,6 +1,6 @@
-#define button 6  // Button connected to D6
-#define LED 8     // LED connected to D8
-#define buzzer 3  // Buzzer connected to D3
+#define button 6  
+#define LED 8     
+#define buzzer 3  
 
 int button_state = 0;        
 int last_button_state = 0;   
