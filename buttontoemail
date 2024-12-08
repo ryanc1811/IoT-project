@@ -5,18 +5,13 @@
 const int buttonPin = 7;  
 bool buttonPressed = false; 
 
-// PushingBox API URL and Device ID
 String pushingboxURL = "http://api.pushingbox.com/pushingbox";
 String deviceID = "v0200C76CEAC801B";  
 
 void setup() {
   Serial.begin(9600);
-  
   Bridge.begin();
-
   pinMode(buttonPin, INPUT_PULLUP);  
-
-  // Wait for the Yun to initialize
   delay(5000);
 }
 
@@ -24,11 +19,10 @@ void loop() {
   static bool lastButtonState = HIGH;  
   bool currentButtonState = digitalRead(buttonPin); 
 
-
   if (lastButtonState == HIGH && currentButtonState == LOW) {
     buttonPressed = true;
     sendPushingBoxRequest();  
-    delay(2000);  // Debounce delay to avoid multiple triggers
+    delay(2000); 
   } else if (currentButtonState == HIGH) {
     buttonPressed = false;  
   }
@@ -37,13 +31,11 @@ void loop() {
 }
 
 void sendPushingBoxRequest() {
-  // Using the Yun's Bridge to send an HTTP GET request to PushingBox
   Serial.println("Sending request to PushingBox...");
-
   Process p;
-  p.begin("curl");  // Using curl command to send the HTTP request
+  p.begin("curl");
   p.addParameter(pushingboxURL + "?devid=" + deviceID); 
-  p.run();  // Run the command
-  
+  p.run();  
   Serial.println("PushingBox request sent!");
 }
+
