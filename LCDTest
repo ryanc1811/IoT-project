@@ -1,0 +1,22 @@
+#include <LiquidCrystal.h>
+
+LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
+
+const int buttonPin = 7;
+
+void setup() {
+  lcd.begin(16, 2);
+  pinMode(buttonPin, INPUT_PULLUP);
+}
+
+void loop() {
+  if (digitalRead(buttonPin) == LOW) {
+    lcd.setCursor(0, 0);
+    lcd.print("Missile");
+    lcd.setCursor(0, 1);
+    lcd.print("inbound");
+  } else {
+    lcd.clear();
+  }
+}
+
