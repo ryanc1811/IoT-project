@@ -3,23 +3,20 @@
 
 rgb_lcd lcd;
 
-const int buttonPin = 7;  // Pin for the button
-const int buzzerPin = 8;  // Pin for the buzzer
-const int ledPin = 5;     // Pin for the LED
+const int buttonPin = 7;
+const int buzzerPin = 8;
+const int ledPin = 5;
 
-bool isAlertActive = false; // Tracks the state of the alert
+bool isAlertActive = false;
 
 void setup() {
-  // Initialize LCD
   lcd.begin(16, 2);
-  lcd.setRGB(0, 0, 0);  // Turn off the backlight initially
+  lcd.setRGB(0, 0, 0);
 
-  // Set up pins
-  pinMode(buttonPin, INPUT_PULLUP); // Button with pull-up resistor
+  pinMode(buttonPin, INPUT_PULLUP);
   pinMode(buzzerPin, OUTPUT);
   pinMode(ledPin, OUTPUT);
 
-  // Ensure all outputs are off initially
   digitalWrite(buzzerPin, LOW);
   digitalWrite(ledPin, LOW);
 }
@@ -28,17 +25,15 @@ void loop() {
   static bool lastButtonState = HIGH; 
   bool currentButtonState = digitalRead(buttonPin); 
   if (lastButtonState == HIGH && currentButtonState == LOW) { 
-    isAlertActive = !isAlertActive; // Toggle the alert state
+    isAlertActive = !isAlertActive;
 
     if (isAlertActive) {
-      // Activate the alert
       lcd.setRGB(255, 0, 0);  
       lcd.setCursor(0, 0);
       lcd.print("WARNING!!");
       digitalWrite(buzzerPin, HIGH); 
       digitalWrite(ledPin, HIGH);  
     } else {
-      // Deactivate the alert
       lcd.setRGB(0, 0, 0);  
       lcd.clear();          
       digitalWrite(buzzerPin, LOW); 
@@ -48,3 +43,4 @@ void loop() {
 
   lastButtonState = currentButtonState; 
 }
+
